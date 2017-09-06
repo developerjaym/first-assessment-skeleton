@@ -14,6 +14,8 @@ public class Server implements Runnable {
 	private int port;
 	private ExecutorService executor;
 	
+	private ClientTracker clientTracker = new ClientTracker();
+	
 	public Server(int port, ExecutorService executor) {
 		super();
 		this.port = port;
@@ -27,7 +29,8 @@ public class Server implements Runnable {
 			ss = new ServerSocket(this.port);
 			while (true) {
 				Socket socket = ss.accept();
-				ClientHandler handler = new ClientHandler(socket);
+				log.info("Jay says a socket has been started");
+				ClientHandler handler = new ClientHandler(socket, clientTracker);
 				executor.execute(handler);
 			}
 		} catch (IOException e) {

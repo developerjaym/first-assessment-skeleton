@@ -18,9 +18,12 @@ public class ClientHandler implements Runnable {
 
 	private Socket socket;
 
-	public ClientHandler(Socket socket) {
+	private ClientTracker clientTracker;
+	
+	public ClientHandler(Socket socket, ClientTracker ct) {
 		super();
 		this.socket = socket;
+		clientTracker = ct;
 	}
 
 	public void run() {
@@ -37,16 +40,28 @@ public class ClientHandler implements Runnable {
 				switch (message.getCommand()) {
 					case "connect":
 						log.info("user <{}> connected", message.getUsername());
+						clientTracker.onClientConnected(message.getUsername(), writer);
 						break;
 					case "disconnect":
 						log.info("user <{}> disconnected", message.getUsername());
+						clientTracker.onClientDisconnected(message.getUsername());
 						this.socket.close();
+						break;
+					case "broadcast":
+						log.info("user <{}> broadcasted", message.getUsername());
+						clientTracker.broadcast(message);
+						break;
+					case "users":
+						log.info("user <{}> users", message.getUsername());
+						clientTracker.onUsers(writer);
 						break;
 					case "echo":
 						log.info("user <{}> echoed message <{}>", message.getUsername(), message.getContents());
-						String response = mapper.writeValueAsString(message);
-						writer.write(response);
-						writer.flush();
+						clientTracker.onEcho(message, writer);
+						break;
+					default:
+						log.info("user <{}> default", message.getUsername());//GET THIS WORKING, PROBLEM IS LIKELY CLIENT SIDE
+						clientTracker.onDefault(message);
 						break;
 				}
 			}
