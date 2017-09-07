@@ -29,7 +29,6 @@ public class Server implements Runnable {
 			ss = new ServerSocket(this.port);
 			while (true) {
 				Socket socket = ss.accept();
-				log.info("Jay says a socket has been started");
 				ClientHandler handler = new ClientHandler(socket, clientTracker);
 				executor.execute(handler);
 			}

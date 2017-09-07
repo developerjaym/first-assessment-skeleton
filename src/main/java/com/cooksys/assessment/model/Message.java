@@ -1,10 +1,18 @@
 package com.cooksys.assessment.model;
 
+import java.util.Calendar;
+
 public class Message {
 
 	private String username;
 	private String command;
 	private String contents;
+	
+	public static final String ECHO = "echo";
+	public static final String BROADCAST = "broadcast";
+	public static final String CONNECT ="connect";
+	public static final String DISCONNECT = "disconnect";
+	public static final String USERS = "users";
 	
 	public Message()
 	{}//Jay-made constructor, according to JavaBeans convention
@@ -45,7 +53,30 @@ public class Message {
 	public void setContents(String contents) {
 		this.contents = contents;
 	}
-
+	
+	public static String formatUsername(String un){
+		String returnMe = "<" + un + "> ";
+		
+		return returnMe;
+	}
+	public static String getTimeStamp()
+	{
+		Calendar calendar = Calendar.getInstance();
+		int month = (calendar.get(Calendar.MONTH))+1;
+		StringBuilder sb = new StringBuilder("");
+		System.out.println("Month: " + month);
+		sb.append(month);
+		sb.append("-");
+		sb.append(calendar.get(Calendar.DATE));
+		sb.append("-");
+		sb.append(calendar.get(Calendar.YEAR));
+		sb.append(" ");
+		sb.append(calendar.get(Calendar.HOUR_OF_DAY));
+		sb.append(":");
+		sb.append(calendar.get(Calendar.MINUTE));
+		sb.append(": ");
+		return sb.toString();
+	}
 	@Override
 	public String toString() {
 		return "Message [username=" + username + ", command=" + command + ", contents=" + contents + "]";

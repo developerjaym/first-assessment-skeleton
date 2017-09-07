@@ -38,24 +38,24 @@ public class ClientHandler implements Runnable {
 				Message message = mapper.readValue(raw, Message.class);
 
 				switch (message.getCommand()) {
-					case "connect":
+					case Message.CONNECT://"connect":
 						log.info("user <{}> connected", message.getUsername());
 						clientTracker.onClientConnected(message.getUsername(), writer);
 						break;
-					case "disconnect":
+					case Message.DISCONNECT://"disconnect":
 						log.info("user <{}> disconnected", message.getUsername());
 						clientTracker.onClientDisconnected(message.getUsername());
 						this.socket.close();
 						break;
-					case "broadcast":
+					case Message.BROADCAST://"broadcast":
 						log.info("user <{}> broadcasted", message.getUsername());
 						clientTracker.broadcast(message);
 						break;
-					case "users":
+					case Message.USERS://"users":
 						log.info("user <{}> users", message.getUsername());
 						clientTracker.onUsers(writer);
 						break;
-					case "echo":
+					case Message.ECHO://"echo":
 						log.info("user <{}> echoed message <{}>", message.getUsername(), message.getContents());
 						clientTracker.onEcho(message, writer);
 						break;
@@ -68,6 +68,16 @@ public class ClientHandler implements Runnable {
 
 		} catch (IOException e) {
 			log.error("Something went wrong :/", e);
+			
+			log.info("user <{}> probably disconnected", clientTracker.getProbableUsername());
+			clientTracker.onClientDisconnected(clientTracker.getProbableUsername());
+			try {
+				this.socket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				System.out.println("possible problem closing socket after loser exited");
+				e1.printStackTrace();
+			}
 		}
 	}
 
