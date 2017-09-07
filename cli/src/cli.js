@@ -8,34 +8,36 @@ export const cli = vorpal()
 let username
 let server
 
-let portNumber = 8080//Jay line
-let hostName = 'localhost'//Jay line
-const commandWords = ['connect', 'disconnect', 'echo', 'users', 'broadcast', 'exit'];
-let previousCommand = ''//Jay line
+let portNumber = 8080//default socket value
+let hostName = 'localhost'//default host name
+const commandWords = ['connect', 'disconnect', 'echo', 'users', 'broadcast', 'exit'];//convenient array of command words
+let previousCommand = ''//default previous command
 
 cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
 
 cli
   //.mode('connect <username>')
-  .mode('connect <username> <port> <host>')//Jay line
+  .mode('connect <username> <port> <host>')
   .delimiter(cli.chalk['green']('connected>'))
   .init(function (args, callback) {
     username = args.username
     username = username.toLowerCase()
-    if(!/^[a-z]*$/.test(username) || commandWords.indexOf(username) !== -1)//problem, username should not be a commandword
-    {
+    
+    if(!/^[a-z]*$/.test(username) || commandWords.indexOf(username) !== -1)
+    {//username should be a-z, no caps because caps confuse Vorpal
+      //username should not be a command, because that would confuse everyone
       username = "user"
       this.log("Invalid username, calling you " + username + ", instead.");
     }  
     else
     {
-      this.log("Welcome, " + username)
-    }  
-    //Jay code below
+      this.log("Welcome, " + username + "!")//courtesy
+    } 
+
+    //get port number and host name
     portNumber = parseInt(args.port)
     hostName = args.host
-    //Jay code above
 
     //server = connect({ host: 'localhost', port: 8080 }, () => {
     server = connect({ host: hostName, port: portNumber }, () => {
@@ -44,6 +46,7 @@ cli
     })
 
     server.on('data', (buffer) => {
+      //display the message and give it a different color for each command
       const mess = Message.fromJSON(buffer);
       if(mess.command === 'broadcast')
         this.log(cli.chalk['cyan'](mess.contents));

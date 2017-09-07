@@ -15,6 +15,7 @@ public class Main {
 	private static Logger log = LoggerFactory.getLogger(Main.class);
 
 	public static void main(String[] args) {
+		
 		ExecutorService executor = Executors.newCachedThreadPool();
 		
 		Server server = new Server(8080, executor);
