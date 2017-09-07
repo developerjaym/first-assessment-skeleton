@@ -20,7 +20,8 @@ public class Message {
 	public static final String CONNECT ="connect";
 	public static final String DISCONNECT = "disconnect";
 	public static final String USERS = "users";
-	public static final String[] COMMANDLIST = {ECHO, BROADCAST, CONNECT, DISCONNECT, USERS};//for easier error checking
+	public static final String SERVERNAME = "SERVER";
+	public static final String[] COMMANDLIST = {ECHO, BROADCAST, CONNECT, DISCONNECT, USERS, SERVERNAME};//for easier error checking
 	
 	/**
 	 * This empty constructor is meant to make this class comply with the JavaBeans convention.

@@ -17,6 +17,13 @@ public class ClientTracker
 	private ConcurrentHashMap<String, PrintWriter> clientList = new ConcurrentHashMap<>();//this stores all the current clients <username, writer to that user's socket>
 	private ObjectMapper mapper = new ObjectMapper();//this is used to convert between Java Objects (namely, Message) and JSON
 	
+	public boolean hasAlready(String username)
+	{
+		if(clientList.containsKey(username))
+			return true;
+		return false;
+	}
+	
 	/**
 	 * This method is called when the ClientHandler reads a 'connect' command.
 	 * It builds a Message (a connection alert) to send to everyone, 
@@ -58,7 +65,7 @@ public class ClientTracker
 			contents.append(Message.formatUsername(user));
 			contents.append("\n");
 		});
-		sendMessage(new Message("Server", Message.USERS, contents.toString()), writer);
+		sendMessage(new Message(Message.SERVERNAME, Message.USERS, contents.toString()), writer);
 	}
 	/**
 	 * This method is called when the user wants to direct message someone (or when the user sends an invalid command).
@@ -67,7 +74,7 @@ public class ClientTracker
 	 * 
 	 * @param message the Message to send directly to another user. This Message's command will be a username.
 	 */
-	public void onDefault(Message message)
+	public synchronized void onDefault(Message message)
 	{
 		if(clientList.containsKey(message.getCommand()))
 		{//If this command corresponds to a user on the client list
@@ -97,7 +104,7 @@ public class ClientTracker
 	 * It formats the Message and sends it to all.
 	 * @param message the Message received by the ClientHandler
 	 */
-	public void broadcast(Message message)
+	public synchronized void broadcast(Message message)
 	{
 		message.setContents(Message.formatUsername(message.getUsername()) + MessageEnum.BROADCAST.toString() + message.getContents());
 		sendToAll(message);
@@ -105,12 +112,15 @@ public class ClientTracker
 	/**
 	 * This method sends a Message to all currently connected users.
 	 * It loops through the client list and writes the Message to each PrintWriter.
+	 * If the user doesn't exist and is still on the list, then they are removed from the list
 	 * @param message the Message to be sent to all.
 	 */
-	private void sendToAll(Message message) 
+	private synchronized void sendToAll(Message message) 
 	{
 		clientList.forEach((user, writer)->{
-			sendMessage(message, writer);
+			boolean exists = sendMessage(message, writer);
+			if(!exists)
+				clientList.remove(user);
 		});
 	}
 	/**
@@ -119,16 +129,20 @@ public class ClientTracker
 	 * 
 	 * @param message the Message to be sent
 	 * @param writer the PrintWriter belonging to whichever user this Message is meant for
+	 * @return returns true if the user exists, false otherwise
 	 */
-	public void sendMessage(Message message, PrintWriter writer)
+	public boolean sendMessage(Message message, PrintWriter writer)
 	{
 		message.setContents(Message.getTimeStamp() + message.getContents());
 		try {
 			String response = mapper.writeValueAsString(message);
+			if(writer == null)//occasionally, a non-existent client will still be on the list
+				return false;
 			writer.write(response);
 			writer.flush();
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}	
+		return true;
 	}
 }

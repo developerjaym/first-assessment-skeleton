@@ -11,18 +11,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cooksys.assessment.model.Message;
+import com.cooksys.assessment.model.MessageEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientHandler implements Runnable {
 	private Logger log = LoggerFactory.getLogger(ClientHandler.class);
-
 	private Socket socket;
-
 	private ClientTracker clientTracker;
+	private String clientname = "unknown";//this is used when the user enters 'exit' without first disconnecting and also when a user selects an already used username
 	
-	private String probableUsername = "unknown";//this is used when the user enters 'exit' without first disconnecting
-	
-	
+	/**
+	 * 
+	 * @param socket the Socket for this particular client
+	 * @param ct the ClientTracker used by the Server to keep track of all clients
+	 */
 	public ClientHandler(Socket socket, ClientTracker ct) {
 		super();
 		this.socket = socket;
@@ -43,8 +45,9 @@ public class ClientHandler implements Runnable {
 				switch (message.getCommand()) {
 					case Message.CONNECT:
 						log.info("user <{}> connected", message.getUsername());
-						setProbableUsername(message.getUsername());
-						clientTracker.onClientConnected(message.getUsername(), writer);
+						setClientName(message.getUsername());
+						clientTracker.onClientConnected(getClientName(), writer);
+						greet(message);
 						break;
 					case Message.DISCONNECT:
 						log.info("user <{}> disconnected", message.getUsername());
@@ -75,8 +78,8 @@ public class ClientHandler implements Runnable {
 			
 			/*This IOException typically occurs when a user disconnects after typing 'exit' rather than 'disconnect'
 			 * Such users should be removed from the client list and a disconnection alert should be sent to all*/
-			log.info("user <{}> probably disconnected", getProbableUsername());
-			clientTracker.onClientDisconnected(getProbableUsername());
+			log.info("user <{}> probably disconnected", getClientName());
+			clientTracker.onClientDisconnected(getClientName());
 			try {
 				this.socket.close();
 			} catch (IOException e1) {
@@ -85,6 +88,13 @@ public class ClientHandler implements Runnable {
 			}
 		}
 	}
+
+	private void greet(Message message) {
+		if(!message.getUsername().equals(getClientName()))//let user know their name has changed
+			clientTracker.onDefault(new Message(Message.SERVERNAME, getClientName(), MessageEnum.NAMECHANGE.toString() + clientname + "\n" + MessageEnum.APOLOGY.toString()));
+		else
+			clientTracker.onDefault(new Message(Message.SERVERNAME, getClientName(), MessageEnum.WELCOME.toString() + clientname));
+	}
 	/**
 	 * This method is useful because the ClientTracker sometimes needs to know which user it belongs to.
 	 * When the user disconnects with 'exit' rather than 'disconnect' we need the username to send a proper
@@ -92,17 +102,21 @@ public class ClientHandler implements Runnable {
 	 * 
 	 * @return the username associated with this ClientTracker
 	 */
-	public String getProbableUsername() {
-		return probableUsername;
+	public String getClientName() {
+		return clientname;
 	}
 	/**
-	 * This method is useful because the ClientTracker sometimes needs to know which user it belongs to.
+	 * This method is useful because the ClientHandler sometimes needs to know which user it belongs to.
 	 * When the user disconnects with 'exit' rather than 'disconnect' we need the username to send a proper
 	 * disconnection alert to all users.
+	 * This method also prevents two users from having the same name.
 	 * 
-	 * @param probableUsername the username associated with this ClientTracker
+	 * @param cn the username associated with this ClientTracker
 	 */
-	public void setProbableUsername(String probableUsername) {
-		this.probableUsername = probableUsername;
+	public void setClientName(String cn) {
+		if(clientTracker.hasAlready(cn))
+			setClientName(MessageEnum.NAMEDIFFERENTIATOR+cn);
+		else
+			this.clientname = cn;
 	}
 }

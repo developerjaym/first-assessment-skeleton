@@ -9,7 +9,11 @@ public enum MessageEnum {
 	DIRECTMESSAGE("(whisper): "), CONNECTIONALERT("has connected"),
 	DISCONNECTIONALERT("has disconnected"),
 	USERS("currently connected users:\n"),
-	INVALIDCOMMAND(" has an invalid command");
+	INVALIDCOMMAND(" has an invalid command"),
+	APOLOGY("Sorry for any inconvenience."),
+	WELCOME("Welcome, "),
+	NAMECHANGE("Your name is now "),
+	NAMEDIFFERENTIATOR("other");
 
     private final String text;
 

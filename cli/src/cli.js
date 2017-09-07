@@ -10,42 +10,37 @@ let server
 
 let portNumber = 8080//default socket value
 let hostName = 'localhost'//default host name
-const commandWords = ['connect', 'disconnect', 'echo', 'users', 'broadcast', 'exit'];//convenient array of command words
+const commandWords = ['connect', 'disconnect', 'echo', 'users', 'broadcast', 'exit', 'server'];//convenient array of command words
 let previousCommand = ''//default previous command
 
 cli
   .delimiter(cli.chalk['yellow']('ftd~$'))
 
 cli
-  //.mode('connect <username>')
   .mode('connect <username> <port> <host>')
   .delimiter(cli.chalk['green']('connected>'))
   .init(function (args, callback) {
     username = args.username
     username = username.toLowerCase()
-    
+
     if(!/^[a-z]*$/.test(username) || commandWords.indexOf(username) !== -1)
-    {//username should be a-z, no caps because caps confuse Vorpal
+    {//username should be a-z, no caps because caps confuse Vorpal, as do special characters
       //username should not be a command, because that would confuse everyone
       username = "user"
-      this.log("Invalid username, calling you " + username + ", instead.");
+      this.log("Invalid username. I will think of a new name for you.");
     }  
-    else
-    {
-      this.log("Welcome, " + username + "!")//courtesy
-    } 
 
     //get port number and host name
     portNumber = parseInt(args.port)
     hostName = args.host
 
-    //server = connect({ host: 'localhost', port: 8080 }, () => {
     server = connect({ host: hostName, port: portNumber }, () => {
       server.write(new Message({ username, command: 'connect' }).toJSON() + '\n')
       callback()
     })
 
     server.on('data', (buffer) => {
+      //handle server input
       //display the message and give it a different color for each command
       const mess = Message.fromJSON(buffer);
       if(mess.command === 'broadcast')
@@ -67,7 +62,7 @@ cli
     })
   })
   .action(function (input, callback) {
-
+    //handle user input
     const inputWords =  words(input)
     if(inputWords.length !== 0 && previousCommand !== '' && (inputWords[0] !== 'disconnect' && inputWords[0] !== 'echo' && inputWords[0] !== 'users' && inputWords[0] !== 'broadcast' && !input.startsWith("@") ))
     {//we have a previous command and the user is not trying to do another command
@@ -99,7 +94,6 @@ cli
     }else {
         previousCommand = ''
         this.log(cli.chalk['yellow'](`Command <${command}> was not recognized.\nA command is required!`))
-        //give more useful information here
     }
 
     callback()
