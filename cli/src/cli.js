@@ -8,6 +8,8 @@ export const cli = vorpal()
 let username
 let server
 
+let alreadyRenamed = false
+
 let portNumber = 8080//default socket value
 let hostName = 'localhost'//default host name
 const commandWords = ['connect', 'disconnect', 'echo', 'users', 'broadcast', 'exit', 'server'];//convenient array of command words
@@ -43,6 +45,16 @@ cli
       //handle server input
       //display the message and give it a different color for each command
       const mess = Message.fromJSON(buffer);
+      if(mess.username === 'SERVER' && !alreadyRenamed)
+      {//I'm probably being renamed
+        if(mess.contents.indexOf("Welcome") === -1)
+        {//the name is not accepted
+          const arr = words(mess.contents);
+          username = arr[9];//this word will be the new name
+        }  
+      }  
+      alreadyRenamed = true;
+      
       if(mess.command === 'broadcast')
         this.log(cli.chalk['cyan'](mess.contents));
       else if(mess.command === 'users')

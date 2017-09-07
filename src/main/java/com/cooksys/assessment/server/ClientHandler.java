@@ -18,8 +18,7 @@ public class ClientHandler implements Runnable {
 	private Logger log = LoggerFactory.getLogger(ClientHandler.class);
 	private Socket socket;
 	private ClientTracker clientTracker;
-	private String clientname = "unknown";//this is used when the user enters 'exit' without first disconnecting and also when a user selects an already used username
-	
+	private String clientname = "unknown";
 	/**
 	 * 
 	 * @param socket the Socket for this particular client
@@ -91,7 +90,7 @@ public class ClientHandler implements Runnable {
 
 	private void greet(Message message) {
 		if(!message.getUsername().equals(getClientName()))//let user know their name has changed
-			clientTracker.onDefault(new Message(Message.SERVERNAME, getClientName(), MessageEnum.NAMECHANGE.toString() + clientname + "\n" + MessageEnum.APOLOGY.toString()));
+			clientTracker.onDefault(new Message(Message.SERVERNAME, getClientName(), clientname + MessageEnum.NAMECHANGE.toString()  + "\n" + MessageEnum.APOLOGY.toString()));
 		else
 			clientTracker.onDefault(new Message(Message.SERVERNAME, getClientName(), MessageEnum.WELCOME.toString() + clientname));
 	}

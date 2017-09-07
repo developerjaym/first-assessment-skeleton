@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.cooksys.assessment.model.Message;
 import com.cooksys.assessment.model.MessageEnum;
+import com.cooksys.assessment.model.MessageFormatter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,7 +35,7 @@ public class ClientTracker
 	 */
 	public void onClientConnected(String username, PrintWriter writer)
 	{
-		Message message = new Message(username, Message.CONNECT, Message.formatUsername(username) + MessageEnum.CONNECTIONALERT.toString());
+		Message message = MessageFormatter.getFormattedConnectionAlert(username);
 		sendToAll(message);
 		clientList.put(username, writer);
 	}
@@ -48,7 +49,7 @@ public class ClientTracker
 	public void onClientDisconnected(String username)
 	{
 		clientList.remove(username);
-		Message message = new Message(username, Message.DISCONNECT, Message.formatUsername(username) + MessageEnum.DISCONNECTIONALERT.toString());
+		Message message = MessageFormatter.getFormattedDisconnectionAlert(username);
 		sendToAll(message);
 	}
 	/**
@@ -62,10 +63,11 @@ public class ClientTracker
 	{
 		StringBuilder contents = new StringBuilder(MessageEnum.USERS.toString());
 		clientList.forEach((user, w)->{
-			contents.append(Message.formatUsername(user));
+			contents.append(MessageFormatter.formatUsername(user));
 			contents.append("\n");
 		});
-		sendMessage(new Message(Message.SERVERNAME, Message.USERS, contents.toString()), writer);
+		Message message = MessageFormatter.getFormattedUsersMessage(contents.toString());
+		sendMessage(message, writer);
 	}
 	/**
 	 * This method is called when the user wants to direct message someone (or when the user sends an invalid command).
@@ -79,13 +81,13 @@ public class ClientTracker
 		if(clientList.containsKey(message.getCommand()))
 		{//If this command corresponds to a user on the client list
 			String otherGuy = message.getCommand();
-			message.setContents(Message.formatUsername(message.getUsername()) + MessageEnum.DIRECTMESSAGE.toString() + message.getContents());
-			sendMessage(message, clientList.get(otherGuy));
+			Message message2 = MessageFormatter.getFormattedDirectMessage(message.getUsername(), message.getCommand(), message.getContents());
+			sendMessage(message2, clientList.get(otherGuy));
 		}
 		else
 		{//The command is invalid, send an error message back
-			message.setContents(message.toString() + MessageEnum.INVALIDCOMMAND.toString());
-			sendMessage(message, clientList.get(message.getUsername()));
+			Message message2 = MessageFormatter.getFormattedDirectMessageErrorMessage(message.getUsername(), message.getCommand(), message.toString());
+			sendMessage(message2, clientList.get(message.getUsername()));
 		}
 	}
 	/**
@@ -96,8 +98,8 @@ public class ClientTracker
 	 */
 	public void onEcho(Message message, PrintWriter writer) 
 	{
-		message.setContents(Message.formatUsername(message.getUsername()) + MessageEnum.ECHO.toString() + message.getContents());
-		sendMessage(message, writer);
+		Message message2 = MessageFormatter.getFormattedEchoMessage(message.getUsername(), message.getContents());
+		sendMessage(message2, writer);
 	}
 	/**
 	 * This method is called when the ClientHandler receives a 'broadcast' command.
@@ -106,8 +108,8 @@ public class ClientTracker
 	 */
 	public synchronized void broadcast(Message message)
 	{
-		message.setContents(Message.formatUsername(message.getUsername()) + MessageEnum.BROADCAST.toString() + message.getContents());
-		sendToAll(message);
+		Message message2 = MessageFormatter.getFormattedBroadcastMessage(message.getUsername(), message.getContents());
+		sendToAll(message2);
 	}
 	/**
 	 * This method sends a Message to all currently connected users.
@@ -131,9 +133,8 @@ public class ClientTracker
 	 * @param writer the PrintWriter belonging to whichever user this Message is meant for
 	 * @return returns true if the user exists, false otherwise
 	 */
-	public boolean sendMessage(Message message, PrintWriter writer)
+	public synchronized boolean sendMessage(Message message, PrintWriter writer)
 	{
-		message.setContents(Message.getTimeStamp() + message.getContents());
 		try {
 			String response = mapper.writeValueAsString(message);
 			if(writer == null)//occasionally, a non-existent client will still be on the list

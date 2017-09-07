@@ -6,13 +6,14 @@ public enum MessageEnum {
 	 * These Strings are used when formatting a Message's contents.
 	 */
 	ECHO("(echo): "),  BROADCAST("(all): "),
-	DIRECTMESSAGE("(whisper): "), CONNECTIONALERT("has connected"),
+	DIRECTMESSAGE("(whisper): "), ERRORMESSAGE("(error): "),
+	CONNECTIONALERT("has connected"),
 	DISCONNECTIONALERT("has disconnected"),
 	USERS("currently connected users:\n"),
 	INVALIDCOMMAND(" has an invalid command"),
 	APOLOGY("Sorry for any inconvenience."),
 	WELCOME("Welcome, "),
-	NAMECHANGE("Your name is now "),
+	NAMECHANGE(" is now your name."),
 	NAMEDIFFERENTIATOR("other");
 
     private final String text;

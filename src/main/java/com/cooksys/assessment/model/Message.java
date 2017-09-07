@@ -1,8 +1,5 @@
 package com.cooksys.assessment.model;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class Message {
 	/**
 	 * This class represents a Message, either one sent from one user to another or from the server to a user.
@@ -57,9 +54,9 @@ public class Message {
 	 * @param username the name of the user, should not be a command word
 	 */
 	public void setUsername(String username) {
-		for(String s : COMMANDLIST)
+		/*for(String s : COMMANDLIST)
 			if(s.equalsIgnoreCase(username))
-				throw new IllegalArgumentException("Invalid username.\nUsername cannot be a command word. " + username);
+				throw new IllegalArgumentException("Invalid username.\nUsername cannot be a command word. " + username);*/
 		this.username = username;
 	}
 	/**
@@ -89,28 +86,6 @@ public class Message {
 	 */
 	public void setContents(String contents) {
 		this.contents = contents;
-	}
-	/**
-	 * This method makes the username look the way it's supposed to.
-	 * 
-	 * @param un the username to be formatted
-	 * @return the username with angled brackets <> around it and a space after
-	 */
-	public static String formatUsername(String un){
-		String returnMe = "<" + un + "> ";
-		return returnMe;
-	}
-	/**
-	 * This method builds a String with the month, date, year, hour, and minute. 
-	 * Referenced http://www.tutorialspoint.com/java/java_date_time.htm
-	 * 
-	 * @return a String representing the current time
-	 */
-	public static String getTimeStamp()
-	{
-		Date dNow = new Date();
-		SimpleDateFormat ft = new SimpleDateFormat ("yyyy.MM.dd hh:mm a zzz': '");
-		return ft.format(dNow);
 	}
 	@Override
 	public String toString() {
