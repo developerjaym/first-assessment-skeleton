@@ -4,7 +4,6 @@ public class Message {
 	/**
 	 * This class represents a Message, either one sent from one user to another or from the server to a user.
 	 * It has a username, a command, and some contents.
-	 * This class also has some static methods to help format the Message.
 	 * There are some constants here, too, to help sort the Messages received by ClientHandler.
 	 */
 	private String username;

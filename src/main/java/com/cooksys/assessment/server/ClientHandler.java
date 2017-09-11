@@ -22,12 +22,12 @@ public class ClientHandler implements Runnable {
 	/**
 	 * 
 	 * @param socket the Socket for this particular client
-	 * @param ct the ClientTracker used by the Server to keep track of all clients
+	 * @param clientTracker the ClientTracker used by the Server to keep track of all clients
 	 */
-	public ClientHandler(Socket socket, ClientTracker ct) {
+	public ClientHandler(Socket socket, ClientTracker clientTracker) {
 		super();
 		this.socket = socket;
-		clientTracker = ct;
+		this.clientTracker = clientTracker;
 	}
 
 	public void run() {
@@ -82,7 +82,7 @@ public class ClientHandler implements Runnable {
 			try {
 				this.socket.close();
 			} catch (IOException e1) {
-				System.out.println("possible problem closing socket after loser exited");
+				System.out.println("possible problem closing socket after user exited");
 				e1.printStackTrace();
 			}
 		}
@@ -99,7 +99,7 @@ public class ClientHandler implements Runnable {
 	 * When the user disconnects with 'exit' rather than 'disconnect' we need the username to send a proper
 	 * disconnection alert to all users.
 	 * 
-	 * @return the username associated with this ClientTracker
+	 * @return the username associated with this ClientHandler
 	 */
 	public String getClientName() {
 		return clientname;
@@ -110,12 +110,12 @@ public class ClientHandler implements Runnable {
 	 * disconnection alert to all users.
 	 * This method also prevents two users from having the same name.
 	 * 
-	 * @param cn the username associated with this ClientTracker
+	 * @param clientname the username associated with this ClientHandler
 	 */
-	public void setClientName(String cn) {
-		if(clientTracker.hasAlready(cn))
-			setClientName(MessageEnum.NAMEDIFFERENTIATOR+cn);
+	public void setClientName(String clientname) {
+		if(clientTracker.hasAlready(clientname))
+			setClientName(MessageEnum.NAMEDIFFERENTIATOR+clientname);
 		else
-			this.clientname = cn;
+			this.clientname = clientname;
 	}
 }
